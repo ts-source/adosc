@@ -2,6 +2,6 @@
      "projectReference": {
            "id": "_id_",
            "name": "_name_" },        
-     "name": "ts-source",        
+     "name": "ts-source-test",        
      "description":"Shared github service connection"    
 }]

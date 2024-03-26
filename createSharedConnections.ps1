@@ -27,10 +27,10 @@ foreach ($ado_project in $projects) {
     # Check if a service connection with the same name or ID already exists
     $existingConnection = $existingConnections.value | Where-Object { $_.name -eq $projectName -or $_.id -eq $ado_connectionId }
 
-    if ($existingConnection) {
-        # Delete the existing service connection
-        Invoke-RestMethod -Uri ("{0}/{1}/_apis/serviceendpoint/endpoints/{2}?api-version=6.1-preview.4" -f $ado_org, $projectId, $existingConnection.id) -Headers @{'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:ADO_PAT)"))} -Method Delete
-    }
+    # if ($existingConnection) {
+    #     # Delete the existing service connection
+    #     Invoke-RestMethod -Uri ("{0}/{1}/_apis/serviceendpoint/endpoints/{2}?api-version=6.1-preview.4" -f $ado_org, $projectId, $existingConnection.id) -Headers @{'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:ADO_PAT)"))} -Method Delete
+    # }
     
     # Use the json template we created as the body of the API call
     $body = Get-Content -path "./sharedconnection.json" -Raw
@@ -47,6 +47,6 @@ foreach ($ado_project in $projects) {
         'Method'      = 'PATCH'
         'ContentType' = 'application/json'
         'Body'        = ($body)}
-    # Invoke-RestMethod @params
+    Invoke-RestMethod @params
 
 } # end of foreach
