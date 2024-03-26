@@ -1,0 +1,7 @@
+[{        
+     "projectReference": {
+           "id": "_id_",
+           "name": "_name_" },        
+     "name": "ts-source",        
+     "description":"Shared github service connection"    
+}]
