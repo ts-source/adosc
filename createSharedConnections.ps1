@@ -2,7 +2,7 @@
 # before the service conn can be created, the old one must be removed first
 
 # read in orgs from a file
-$projects = Get-Content -Path "./orgs.txt" | Where-Object { $_ -notmatch '^\s*$' -and $_ -notmatch '^#' }
+$projects = Get-Content -Path "./projects.txt" | Where-Object { $_ -notmatch '^\s*$' -and $_ -notmatch '^#' }
 
 # Login to Azure DevOps
 echo $env:ADO_PAT | az devops login --org $ado_org
@@ -24,14 +24,18 @@ foreach ($ado_project in $projects) {
     # Get existing service connections
     $existingConnections = Invoke-RestMethod -Uri ("{0}{1}/_apis/serviceendpoint/endpoints?api-version=6.0-preview.4" -f $ado_org, $projectId) -Headers @{'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:ADO_PAT)"))}
 
+
+
     # Check if a service connection with the same name or ID already exists
     $existingConnection = $existingConnections.value | Where-Object { $_.name -eq $projectName -or $_.id -eq $ado_connectionId }
 
-    # if ($existingConnection) {
-    #     # Delete the existing service connection
-    #     Invoke-RestMethod -Uri ("{0}/{1}/_apis/serviceendpoint/endpoints/{2}?api-version=6.1-preview.4" -f $ado_org, $projectId, $existingConnection.id) -Headers @{'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:ADO_PAT)"))} -Method Delete
-    # }
-    
+    if ($existingConnection) {
+        # Delete the existing service connection
+        Invoke-RestMethod -Uri ("{0}/_apis/serviceendpoint/endpoints/{2}?projectIds={1}&api-version=7.1-preview.4" -f $ado_org, $projectId, $existingConnection.id) -Headers @{'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:ADO_PAT)"))} -Method Delete
+    }
+    # DELETE https://dev.azure.com/{organization}/_apis/serviceendpoint/endpoints/{endpointId}?projectIds={projectIds}&api-version=7.1-preview.4
+
+
     # Use the json template we created as the body of the API call
     $body = Get-Content -path "./sharedconnection.json" -Raw
 
@@ -48,5 +52,4 @@ foreach ($ado_project in $projects) {
         'ContentType' = 'application/json'
         'Body'        = ($body)}
     Invoke-RestMethod @params
-
 } # end of foreach
